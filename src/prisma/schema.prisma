@@ -1,0 +1,153 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./client"
+}
+
+model BlockCursor {
+  id            Int      @id @default(autoincrement())
+  eventName     String
+  currentHeight Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model User {
+  address           String              @id @unique
+  discord           String?
+  flowns            String?
+  name              String?
+  votingPower       Float               @default(1.0) @db.Real
+  activities        Activity[]
+  votes             Vote[]
+  memorials         Memorial[]
+  BallotBuyRecord   BallotBuyRecord[]
+  TokenChangeRecord TokenChangeRecord[]
+}
+
+model Activity {
+  id            Int                      @id @unique
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
+  title         String                   @db.VarChar(255)
+  metadata      Json
+  creator       User                     @relation(fields: [creatorAddr], references: [address])
+  creatorAddr   String
+  content       String?
+  startDate     DateTime?
+  endDate       DateTime?
+  source        String?
+  lockDate      DateTime?
+  upVote        Int?
+  downVote      Int?
+  closed        Boolean
+  categories    CategoriesOnActivities[]
+  voteResult    Vote[]
+  rewardToken   Float?                   @db.Real
+  absTotalPower Float?                   @db.Real
+  bouns         Float?                   @db.Real
+  memorials     Memorial[]
+}
+
+model Category {
+  id         Int                      @id @default(autoincrement())
+  type       ActivityType             @unique
+  activities CategoriesOnActivities[]
+}
+
+model CategoriesOnActivities {
+  activity   Activity @relation(fields: [activityId], references: [id])
+  activityId Int
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId Int
+
+  @@id([activityId, categoryId])
+}
+
+model Vote {
+  id         Int      @id @default(autoincrement())
+  voter      User     @relation(fields: [voterAddr], references: [address])
+  voterAddr  String
+  isUpVote   Boolean  @default(true)
+  power      Float    @default(1.0) @db.Real
+  activity   Activity @relation(fields: [activityId], references: [id])
+  activityId Int
+}
+
+model EconomicFactor {
+  id                  Int      @id @default(autoincrement())
+  createdAt           DateTime @default(now())
+  createConsumption   Float    @default(100.0) @db.Real // CCS spend for create consumption, also is reward baseline
+  maxRatio            Float    @default(5.0) @db.Real // activityCreater can be reward "reward_baseline * ratio" tokens
+  minRatio            Float    @default(1.0) @db.Real
+  averageRatio        Float    @default(1.5) @db.Real // reward ratio if activity's absTotalPower equal recentAvgTotalPower
+  asymmetry           Float    @default(2.0) @db.Real // the higher the asymmetry value, the higher the reward
+  recentN             Int      @default(10) // recent N activity to compute
+  ballotPrice         Float    @default(1.0) @db.Real // ballot price, change per activity
+  ballotMinPrice      Float    @default(1.0) @db.Real
+  recentAvgTotalPower Float    @default(0.0) @db.Real // recent n activity average absTotalPower, change per activity
+  bounsRatio          Float    @default(0.01) @db.Real // bounsRatio * votingRatio = bouns, bouns will set on memorials
+}
+
+model Memorial {
+  owner            User     @relation(fields: [ownerAddress], references: [address])
+  ownerAddress     String
+  id               Int      @id @unique
+  version          Int
+  seriesNumber     Int
+  circulatingCount Int
+  activity         Activity @relation(fields: [activityId], references: [id])
+  activityId       Int
+  mintedAt         DateTime @default(now())
+  isPositive       Boolean
+  bonus            Float    @db.Real
+}
+
+model BallotBuyRecord {
+  id           Int      @id @default(autoincrement())
+  amount       Int
+  buyer        User     @relation(fields: [buyerAddress], references: [address])
+  buyerAddress String
+  price        Float    @db.Real
+  createdAt    DateTime @default(now())
+}
+
+model TokenChangeRecord {
+  id          Int             @id @default(autoincrement())
+  createdAt   DateTime        @default(now())
+  type        TokenChangeType
+  amount      Float           @db.Real
+  user        User            @relation(fields: [userAddress], references: [address])
+  userAddress String
+  comment     String?
+}
+
+enum TokenChangeType {
+  BuyBallot
+  CreateActivity
+  RewardByActivity
+  Airdrop
+}
+
+enum ActivityType {
+  Interact // use product with no reward, for future airdrop, ⭐️
+  Form // do some task and fill form, ⭐️
+  Vote // voting governance ⭐️
+  Test // test product and report bug, ⭐️⭐️
+  Node // run testnet node, ⭐️⭐️⭐️
+  Learn // learn to earn, ⭐️⭐️
+  Create // create media, meme, aircle..., ⭐️⭐️
+  Develop // develop a product or module ⭐️⭐️⭐️
+  Whitelist // join whitelist ⭐️
+  IXO // join inital offerings ⭐️
+  LuckDraw // join luckdraw ⭐️
+  Register // register join Discord,join telegram,create account,subcribe email,signUp website...⭐️
+  Airdrop // only use for activity/create_airdrop, not confuse with other
+}

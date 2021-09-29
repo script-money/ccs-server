@@ -1,0 +1,178 @@
+import { closeActivity, consumptionUpdated, createActivity, createVote, getActivity, getLastEconomicFactor, rewardParameterUpdated } from '../../src/orm/activity'
+import { ADMIN, USER1, USER2, USER3, USER4, toUFix64 } from '../../src/orm/clientForTest'
+import moment from "moment";
+import { IConsumptionUpdatedFromEvent, ICreateOptionsFromEvent, IVotedOptionsFromEvent, IRewardParameterUpdatedFromEvent, RewardParameter } from '../../src/interface/activity';
+import { createMemorial } from '../../src/orm/momerials';
+
+test('can create new activity (negative) ', async () => {
+  const metadata = JSON.stringify({
+    content: "参加订阅，第一时间获取信息",
+    startDate: moment("2021-09-22 09+08:00"),
+    endDate: null,
+    source: null,
+    categories: ["Register"]
+  })
+
+  const activity = {
+    id: 0,
+    title: 'ICPSquad的邮件订阅',
+    metadata,
+    creator: USER1,
+  } as ICreateOptionsFromEvent
+
+  const result = await createActivity(activity)
+
+  expect(result.id).toEqual(0)
+  expect(result.createdAt).not.toBeNull()
+  expect(result.updatedAt).not.toBeNull()
+  expect(result.startDate).not.toBeNull()
+  expect(result.endDate).toBeNull()
+  expect(result.source).toBeNull()
+  expect(result.closed).toBe(false)
+})
+
+test('user2 can vote up', async () => {
+  const vote = {
+    id: 0,
+    voter: USER2,
+    isUpVote: true
+  } as IVotedOptionsFromEvent
+
+  await createVote(vote)
+
+  const result = await getActivity(0)
+  expect(result.upVote).toBe(2)
+  expect(result.voteResult.length).toBe(2)
+})
+
+test('user3 and user4 vote down', async () => {
+  const vote1 = {
+    id: 0,
+    voter: USER3,
+    isUpVote: false
+  } as IVotedOptionsFromEvent
+
+  const vote2 = {
+    id: 0,
+    voter: USER4,
+    isUpVote: false
+  } as IVotedOptionsFromEvent
+
+  await createVote(vote1)
+  await createVote(vote2)
+
+  const result = await getActivity(0)
+  expect(result.downVote).toBe(2)
+  expect(result.voteResult.length).toBe(4)
+})
+
+test('modify rewardParameter and consumption', async () => {
+  const newConsumption = { newPrice: toUFix64(95) } as IConsumptionUpdatedFromEvent
+  await consumptionUpdated(newConsumption)
+  const result = await getLastEconomicFactor()
+  expect(result.createConsumption).toEqual(95)
+  const newRewardParameterToUpdate = {
+    newParams: {
+      maxRatio: toUFix64(6.0),
+      minRatio: toUFix64(1.0),
+      averageRatio: toUFix64(1.6),
+      asymmetry: toUFix64(2.0)
+    }
+  } as IRewardParameterUpdatedFromEvent
+
+  await rewardParameterUpdated(newRewardParameterToUpdate)
+  const result2 = await getLastEconomicFactor()
+  expect(result2.maxRatio).toEqual(6)
+  expect(result2.averageRatio).toEqual(1.6)
+})
+
+test('close activity when negative vote', async () => {
+  await closeActivity({ id: 0 })
+  const result2 = await getActivity(0)
+  expect(result2.lockDate).not.toBe(null)
+  expect(result2.closed).toBe(true)
+  expect(result2.rewardToken).toEqual(0)
+
+  // create memorial record manually
+  const memorials0Data = {
+    version: 1,
+    reciever: USER3,
+    memorialId: 1,
+    seriesNumber: 1,
+    circulatingCount: 2,
+    activityID: 0,
+    isPositive: false,
+    bonus: toUFix64(result2.bouns),
+  }
+
+  const memorials1Data = {
+    version: 1,
+    reciever: USER4,
+    memorialId: 2,
+    seriesNumber: 2,
+    circulatingCount: 2,
+    activityID: 0,
+    isPositive: false,
+    bonus: toUFix64(result2.bouns),
+  }
+
+  await createMemorial(memorials0Data)
+  await createMemorial(memorials1Data)
+})
+
+
+test('can create new activity (positive)', async () => {
+  const metadata = JSON.stringify({
+    content: `NFT GIVEAWAY
+    The most exciting #NFT collection of the year is coming to #Tezos soon; incubated by
+    @DGHLabs.
+
+    Enter to win one of 5 super rare NFTs by:
+    - Following
+    @LuckyCrabClub
+    - Retweeting this tweet
+    - Tagging 3 friends in the comments`,
+    startDate: moment("2021-09-26 03:07+08:00"),
+    endDate: null,
+    source: "https://twitter.com/LuckyCrabClub/status/1442022933715582978",
+    categories: ["LuckDraw"]
+  })
+
+  const activity = {
+    id: 1,
+    title: 'XYZ链第三个生成NFT的转发空投',
+    metadata,
+    creator: USER1,
+  } as ICreateOptionsFromEvent
+
+  const result = await createActivity(activity)
+
+  expect(result.id).toEqual(1)
+  expect(result.createdAt).not.toBeNull()
+  expect(result.updatedAt).not.toBeNull()
+  expect(result.startDate).not.toBeNull()
+  expect(result.endDate).toBeNull()
+  expect(result.source).not.toBeNull()
+  expect(result.closed).toBe(false)
+
+  const vote = {
+    id: 1,
+    voter: USER3,
+    isUpVote: true
+  } as IVotedOptionsFromEvent
+
+  await createVote(vote)
+
+  const result2 = await getActivity(1)
+  expect(result2.upVote).toBe(2)
+  expect(result2.voteResult.length).toBe(2)
+  expect(result2.absTotalPower).toBeNull()
+  expect(result2.bouns).toBeNull()
+  await closeActivity({ id: 1 })
+  const result3 = await getActivity(1)
+  expect(result3.lockDate).not.toBe(null)
+  expect(result3.closed).toBe(true)
+  expect(result3.rewardToken).not.toEqual(0)
+  expect(result3.absTotalPower).not.toBeNull()
+  expect(result3.bouns).not.toBeNull()
+})

@@ -1,0 +1,17 @@
+# dependencies
+node_modules
+
+# env
+.vscode
+.exrc
+.eslintcache
+.idea/
+
+cadence/
+run/
+logs/
+src/prisma/migrations
+src/prisma/client
+*.sh
+src/prisma/.env
+src/config/dapp-config.json
