@@ -5,6 +5,7 @@ import {
   ICloseOptionsFromTask,
   IConsumptionUpdatedFromEvent,
   ICreateOptionsFromEvent,
+  IQueryManyOptions,
   IRewardParameterUpdatedFromEvent,
   IVotedOptionsFromEvent,
 } from '../interface/activity';
@@ -99,6 +100,49 @@ export const getActivity = async (id: number) => {
       voteResult: true,
     },
   });
+};
+
+/**
+ * get activity list
+ * @param param0 { limit?, offset?, type?, canVote?, canJoin?}
+ */
+export const getActivities = async ({
+  limit,
+  offset,
+  type,
+  canVote,
+  canJoin,
+}: IQueryManyOptions) => {
+  return await prisma.$transaction([
+    prisma.activity.findMany({
+      skip: offset,
+      take: limit,
+      where: {
+        categories: {
+          every: {
+            category: {
+              type,
+            },
+          },
+        },
+        closed: !canVote,
+        // prettier-ignore
+        OR: canJoin
+          ? [
+            {
+              endDate: {
+                lt: new Date(),
+              },
+            },
+            {
+              endDate: null,
+            },
+          ]
+          : undefined,
+      },
+    }),
+    prisma.activity.count(),
+  ]);
 };
 
 /**
