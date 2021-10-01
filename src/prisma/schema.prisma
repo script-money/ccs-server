@@ -22,6 +22,7 @@ model BlockCursor {
 model User {
   address           String              @id @unique
   discord           String?
+  avatar            String?
   flowns            String?
   name              String?
   votingPower       Float               @default(1.0) @db.Real
