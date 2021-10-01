@@ -1,6 +1,6 @@
 import { Provide, TaskLocal, Queue, Inject } from '@midwayjs/decorator';
 import { Config } from '@midwayjs/decorator';
-import { TaskUtils } from './utils';
+import { MID_INTERVAL, TaskUtils } from './utils';
 import {
   createMemorial,
   depositMemorials,
@@ -18,9 +18,9 @@ export class MemorialsTask {
   @Inject()
   taskUtils: TaskUtils;
 
-  @TaskLocal('* * * * *') // every minitus
+  @TaskLocal(MID_INTERVAL)
   async memorialsUpdate() {
-    await this.taskUtils.saveEventsToDB(
+    const lastBlock = await this.taskUtils.saveEventsToDB(
       this.contractAddr,
       this.contractName,
       'memorialMinted',
@@ -31,14 +31,16 @@ export class MemorialsTask {
       this.contractAddr,
       this.contractName,
       'Withdraw',
-      withDrawMemorials
+      withDrawMemorials,
+      lastBlock
     );
 
     await this.taskUtils.saveEventsToDB(
       this.contractAddr,
       this.contractName,
       'Deposit',
-      depositMemorials
+      depositMemorials,
+      lastBlock
     );
   }
 }

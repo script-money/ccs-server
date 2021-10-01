@@ -1,7 +1,7 @@
 import { Provide, TaskLocal, Queue, Inject } from '@midwayjs/decorator';
 import { createBallotBought } from '../orm/ballot';
 import { Config } from '@midwayjs/decorator';
-import { TaskUtils } from './utils';
+import { SHORT_INTERVAL, TaskUtils } from './utils';
 
 @Queue()
 @Provide()
@@ -14,7 +14,7 @@ export class BallotTask {
   @Inject()
   taskUtils: TaskUtils;
 
-  @TaskLocal('* * * * *') // every minitus
+  @TaskLocal(SHORT_INTERVAL)
   async ballotsBought() {
     await this.taskUtils.saveEventsToDB(
       this.contractAddr,

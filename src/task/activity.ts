@@ -7,7 +7,7 @@ import {
   rewardParameterUpdated,
 } from '../orm/activity';
 import { Config } from '@midwayjs/decorator';
-import { TaskUtils } from './utils';
+import { SHORT_INTERVAL, TaskUtils } from './utils';
 
 @Queue()
 @Provide()
@@ -20,9 +20,9 @@ export class ActivityTask {
   @Inject()
   taskUtils: TaskUtils;
 
-  @TaskLocal('* * * * *') // every minitus
+  @TaskLocal(SHORT_INTERVAL)
   async activitiesUpdate() {
-    await this.taskUtils.saveEventsToDB(
+    const lastBlock = await this.taskUtils.saveEventsToDB(
       this.contractAddr,
       this.contractName,
       'activityCreated',
@@ -33,14 +33,16 @@ export class ActivityTask {
       this.contractAddr,
       this.contractName,
       'activityVoted',
-      createVote
+      createVote,
+      lastBlock
     );
 
     await this.taskUtils.saveEventsToDB(
       this.contractAddr,
       this.contractName,
       'activityClosed',
-      closeActivity
+      closeActivity,
+      lastBlock
     );
   }
 

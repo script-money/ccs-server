@@ -4,6 +4,9 @@ import { FlowService } from '../service/flow';
 import * as fcl from '@onflow/fcl';
 import { Event } from '../interface/flow';
 
+export const SHORT_INTERVAL = '*/20 * * * * *'; // every 20 seconds
+export const MID_INTERVAL = '* * * * *'; // every minutes
+
 @Provide()
 export class TaskUtils {
   @Config('maxQueryBlock')
@@ -21,18 +24,21 @@ export class TaskUtils {
    * @param contractName name of contract
    * @param eventName eventname of contract
    * @param ormFunction orm funtion to call
-   * @returns Promise<any>
+   * @returns Promise<number> last block
    */
   async saveEventsToDB(
     contractAddr: string,
     contractName: string,
     eventName: string,
-    ormFunction: (evenData: any) => Promise<any>
-  ) {
+    ormFunction: (evenData: any) => Promise<any>,
+    lastBlock?: number
+  ): Promise<number> {
     const blockCursor =
       await this.blockCursorService.findOrCreateLatestBlockCursor(eventName);
     const initStartBlock = blockCursor.currentHeight;
-    const lastBlock = await this.flowService.getLatestBlockHeight();
+    if (!lastBlock) {
+      lastBlock = await this.flowService.getLatestBlockHeight();
+    }
     const interval = lastBlock - initStartBlock;
 
     if (interval < 0) {
@@ -44,7 +50,7 @@ export class TaskUtils {
 
     const epoch = Math.floor(interval / this.maxQueryBlock);
     if (epoch === 0) {
-      console.log(`interval is ${interval}, wait for next query`);
+      // console.log(`interval is ${interval}, wait for next query`);
       return;
     }
 
@@ -66,5 +72,6 @@ export class TaskUtils {
         });
       }
     }
+    return lastBlock;
   }
 }
