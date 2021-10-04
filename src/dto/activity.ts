@@ -5,10 +5,10 @@ import { ActivityType } from '../prisma/client';
 
 export class ActivitiesGetDTO {
   @Rule(RuleType.number().max(10))
-  limit?: number;
+  limit?: number | string;
 
   @Rule(RuleType.number())
-  offset?: number;
+  offset?: number | string;
 
   @Rule(
     RuleType.any().valid(
@@ -20,8 +20,8 @@ export class ActivitiesGetDTO {
   type?: ActivityType;
 
   @Rule(RuleType.bool())
-  canVote?: boolean;
+  canVote?: boolean | string;
 
   @Rule(RuleType.bool())
-  canJoin?: boolean;
+  canJoin?: boolean | string;
 }

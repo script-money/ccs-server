@@ -113,35 +113,68 @@ export const getActivities = async ({
   canVote,
   canJoin,
 }: IQueryManyOptions) => {
+  // if canJoin is true，return endDate is nul OR gt now
+  // if canJoin is false，return lte now
+  // if canJoin is undified, not filt endDate
+  let filterCondition;
+  const closedAndCategoryConditions = [
+    {
+      closed: canVote === undefined ? undefined : !canVote,
+    },
+    {
+      categories: {
+        some: {
+          category: {
+            type,
+          },
+        },
+      },
+    },
+  ];
+
+  if (canJoin === true) {
+    filterCondition = {
+      AND: closedAndCategoryConditions,
+      OR: [
+        {
+          endDate: {
+            gt: new Date(),
+          },
+        },
+        {
+          endDate: {
+            equals: null,
+          },
+        },
+      ],
+    };
+  } else if (canJoin === false) {
+    filterCondition = {
+      AND: closedAndCategoryConditions,
+      OR: [
+        {
+          endDate: {
+            lt: new Date(),
+          },
+        },
+      ],
+    };
+  } else if (canJoin === undefined) {
+    filterCondition = {
+      AND: closedAndCategoryConditions,
+    };
+  }
+
   return await prisma.$transaction([
     prisma.activity.findMany({
       skip: offset,
       take: limit,
-      where: {
-        categories: {
-          every: {
-            category: {
-              type,
-            },
-          },
-        },
-        closed: !canVote,
-        // prettier-ignore
-        OR: canJoin
-          ? [
-            {
-              endDate: {
-                lt: new Date(),
-              },
-            },
-            {
-              endDate: null,
-            },
-          ]
-          : undefined,
+      where: filterCondition,
+      orderBy: {
+        updatedAt: 'desc',
       },
     }),
-    prisma.activity.count(),
+    prisma.activity.count({ where: filterCondition }),
   ]);
 };
 

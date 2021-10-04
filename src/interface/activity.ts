@@ -74,6 +74,7 @@ export enum userValidActivityTypeEnum {
 
 export interface IGetActivitiesResponse extends IResponse {
   data: any;
+  total: number;
 }
 
 export interface ICloseOptionsFromTask {

@@ -1,8 +1,9 @@
-import { closeActivity, consumptionUpdated, createActivity, createVote, getActivity, getLastEconomicFactor, rewardParameterUpdated } from '../../src/orm/activity'
+import { closeActivity, consumptionUpdated, createActivity, createVote, getActivities, getActivity, getLastEconomicFactor, rewardParameterUpdated } from '../../src/orm/activity'
 import { ADMIN, USER1, USER2, USER3, USER4, toUFix64 } from '../../src/orm/clientForTest'
 import moment from "moment";
-import { IConsumptionUpdatedFromEvent, ICreateOptionsFromEvent, IVotedOptionsFromEvent, IRewardParameterUpdatedFromEvent, RewardParameter } from '../../src/interface/activity';
+import { IConsumptionUpdatedFromEvent, ICreateOptionsFromEvent, IVotedOptionsFromEvent, IRewardParameterUpdatedFromEvent, RewardParameter, userValidActivityTypeEnum } from '../../src/interface/activity';
 import { createMemorial } from '../../src/orm/momerials';
+import * as faker from 'faker'
 
 test('can create new activity (negative) ', async () => {
   const metadata = JSON.stringify({
@@ -10,7 +11,7 @@ test('can create new activity (negative) ', async () => {
     startDate: moment("2021-09-22 09+08:00"),
     endDate: null,
     source: null,
-    categories: ["Register"]
+    categories: ["Register", "Whitelist"]
   })
 
   const activity = {
@@ -120,7 +121,6 @@ test('close activity when negative vote', async () => {
   await createMemorial(memorials1Data)
 })
 
-
 test('can create new activity (positive)', async () => {
   const metadata = JSON.stringify({
     content: `NFT GIVEAWAY
@@ -133,7 +133,7 @@ test('can create new activity (positive)', async () => {
     - Retweeting this tweet
     - Tagging 3 friends in the comments`,
     startDate: moment("2021-09-26 03:07+08:00"),
-    endDate: null,
+    endDate: moment("2021-10-02 00+08:00"),
     source: "https://twitter.com/LuckyCrabClub/status/1442022933715582978",
     categories: ["LuckDraw"]
   })
@@ -151,7 +151,7 @@ test('can create new activity (positive)', async () => {
   expect(result.createdAt).not.toBeNull()
   expect(result.updatedAt).not.toBeNull()
   expect(result.startDate).not.toBeNull()
-  expect(result.endDate).toBeNull()
+  expect(result.endDate).not.toBeNull()
   expect(result.source).not.toBeNull()
   expect(result.closed).toBe(false)
 
@@ -175,4 +175,58 @@ test('can create new activity (positive)', async () => {
   expect(result3.rewardToken).not.toEqual(0)
   expect(result3.absTotalPower).not.toBeNull()
   expect(result3.bouns).not.toBeNull()
+})
+
+test('activities queryMany', async () => {
+
+  function getRandomInt(min: number, max: number) {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+  }
+
+  function getRandomElements() {
+    const enumLength = 11
+    if (Math.random() > 0.5) {
+      return [userValidActivityTypeEnum[getRandomInt(0, enumLength)]]
+    } else {
+      const indexA = getRandomInt(0, enumLength)
+      const indexB = getRandomInt(0, enumLength)
+      const elementA = userValidActivityTypeEnum[indexA]
+      const elementB = userValidActivityTypeEnum[indexB]
+      if (indexA === indexB) {
+        return [elementA]
+      } else {
+        return [elementA, elementB]
+      }
+    }
+  }
+
+  for (let i = 2; i < 100; i++) {
+    const categories = getRandomElements()
+    await createActivity({
+      id: i,
+      title: faker.commerce.productName(),
+      metadata: JSON.stringify({
+        content: faker.commerce.productDescription(),
+        startDate: moment(faker.date.past()),
+        endDate: moment(faker.date.future()),
+        source: faker.internet.url(),
+        categories
+      }),
+      creator: USER1,
+    })
+  }
+
+  const result1 = await getActivities({ limit: 10 })
+  const total = result1[1]
+  expect(result1[0].length).toBe(10)
+
+  const result2 = await getActivities({ limit: 10, type: 'Register' })
+  expect(result2[0].length).toBeLessThan(total)
+  expect(result2[1]).toBeLessThan(total)
+
+  const result3 = await getActivities({ limit: 10, type: 'Register', canJoin: true, canVote: false })
+  expect(result3[0].length).toBe(1)
+
+  const result4 = await getActivities({ limit: 10, type: 'LuckDraw', canJoin: false })
+  expect(result4[0].length).toBe(1)
 })

@@ -15,15 +15,26 @@ export class ActivityService implements IActivityService {
 
   async queryMany(options: ActivitiesGetDTO): Promise<IGetActivitiesResponse> {
     try {
-      const activities = await getActivities(options);
+      const { limit, offset, type, canVote, canJoin } = options;
+      const [activities, total] = await getActivities({
+        limit: limit === undefined ? 10 : Number(limit),
+        offset: offset === undefined ? 0 : Number(offset),
+        type,
+        canVote: canVote === undefined ? undefined : canVote === 'true',
+        canJoin: canJoin === undefined ? undefined : canJoin === 'true',
+      });
+
       return {
         success: true,
         data: activities,
+        total,
       };
     } catch (error) {
+      console.warn(error);
       return {
         success: false,
-        data: [],
+        data: error,
+        total: 0,
         errorCode: httpStatus.INTERNAL_SERVER_ERROR,
         errorMessage: 'unknow error when get activity',
         showType: 2,
