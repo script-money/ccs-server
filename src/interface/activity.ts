@@ -1,6 +1,6 @@
 import { ActivitiesGetDTO } from '../dto/activity';
 // eslint-disable-next-line node/no-unpublished-import
-import { ActivityType } from '../prisma/client';
+import { Activity, ActivityType } from '../prisma/client';
 import { Address, UFix64, UInt64 } from './flow';
 import { IResponse } from './utils';
 
@@ -45,11 +45,8 @@ export interface IQueryManyOptions {
   type?: ActivityType;
   canVote?: boolean;
   canJoin?: boolean;
+  createBy?: Address;
 }
-
-// interface IQueryOneOptions {
-//   id: number;
-// }
 
 // interface IModifyOptions {
 //   id: number;
@@ -73,8 +70,12 @@ export enum userValidActivityTypeEnum {
 }
 
 export interface IGetActivitiesResponse extends IResponse {
-  data: any;
+  data: Activity[];
   total: number;
+}
+
+export interface IGetActivityResponse extends IResponse {
+  data: Activity | null;
 }
 
 export interface ICloseOptionsFromTask {
@@ -93,6 +94,12 @@ export interface IActivityService {
    * @param options queryParams
    */
   queryMany(options: ActivitiesGetDTO): Promise<IGetActivitiesResponse>;
+
+  /**
+   * query one activity by id, use for controller
+   * @param options activity id
+   */
+  queryOne(id: number): Promise<IGetActivityResponse>;
 
   // /**
   //  * allow creater change activity's important data

@@ -5,12 +5,14 @@ import {
   Get,
   ALL,
   Query,
+  Validate,
 } from '@midwayjs/decorator';
 import { Context } from 'egg';
 
 import {
   IActivityService,
   IGetActivitiesResponse,
+  IGetActivityResponse,
 } from '../interface/activity';
 import { ActivitiesGetDTO } from '../dto/activity';
 import httpStatus from 'http-status';
@@ -24,7 +26,15 @@ export class ActivityController {
   @Inject()
   ctx: Context;
 
+  @Get('/:id')
+  async getActivity(): Promise<IGetActivityResponse> {
+    const result = await this.activityService.queryOne(this.ctx.params.id);
+    this.ctx.status = result.success ? httpStatus.OK : result.errorCode;
+    return result;
+  }
+
   @Get('/')
+  @Validate()
   async getActivities(
     @Query(ALL) queryOptions: ActivitiesGetDTO
   ): Promise<IGetActivitiesResponse> {

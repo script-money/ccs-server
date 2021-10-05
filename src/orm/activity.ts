@@ -92,14 +92,17 @@ export const createActivity = async (eventData: ICreateOptionsFromEvent) => {
  * @returns activity
  */
 export const getActivity = async (id: number) => {
-  return await prisma.activity.findUnique({
+  const activityToQuery = await prisma.activity.findUnique({
     where: {
       id: id,
     },
     include: {
       voteResult: true,
+      creator: true,
     },
   });
+
+  return activityToQuery;
 };
 
 /**
@@ -112,12 +115,13 @@ export const getActivities = async ({
   type,
   canVote,
   canJoin,
+  createBy,
 }: IQueryManyOptions) => {
   // if canJoin is true，return endDate is nul OR gt now
   // if canJoin is false，return lte now
   // if canJoin is undified, not filt endDate
   let filterCondition;
-  const closedAndCategoryConditions = [
+  const otherConditions = [
     {
       closed: canVote === undefined ? undefined : !canVote,
     },
@@ -130,11 +134,16 @@ export const getActivities = async ({
         },
       },
     },
+    {
+      creator: {
+        address: createBy,
+      },
+    },
   ];
 
   if (canJoin === true) {
     filterCondition = {
-      AND: closedAndCategoryConditions,
+      AND: otherConditions,
       OR: [
         {
           endDate: {
@@ -150,7 +159,7 @@ export const getActivities = async ({
     };
   } else if (canJoin === false) {
     filterCondition = {
-      AND: closedAndCategoryConditions,
+      AND: otherConditions,
       OR: [
         {
           endDate: {
@@ -161,7 +170,7 @@ export const getActivities = async ({
     };
   } else if (canJoin === undefined) {
     filterCondition = {
-      AND: closedAndCategoryConditions,
+      AND: otherConditions,
     };
   }
 

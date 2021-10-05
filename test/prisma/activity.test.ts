@@ -229,4 +229,7 @@ test('activities queryMany', async () => {
 
   const result4 = await getActivities({ limit: 10, type: 'LuckDraw', canJoin: false })
   expect(result4[0].length).toBe(1)
+
+  const result5 = await getActivities({ limit: 10, createBy: '0x0000000000000000' })
+  expect(result5[0].length).toBe(0)
 })

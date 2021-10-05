@@ -24,4 +24,7 @@ export class ActivitiesGetDTO {
 
   @Rule(RuleType.bool())
   canJoin?: boolean | string;
+
+  @Rule(RuleType.string())
+  createBy?: string;
 }
