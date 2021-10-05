@@ -3,5 +3,5 @@ export interface IResponse {
   data?: any; // response data
   errorCode?: number; // code for errorType
   errorMessage?: string; // message display to user
-  showType?: number; // error display type： 0 silent; 1 message.warn; 2 message.error; 4 notification; 9 page
+  showType?: number; // error display type： 0 silent; 1 message.warn; 2 message.error
 }

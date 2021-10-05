@@ -1,4 +1,4 @@
-import { closeActivity, consumptionUpdated, createActivity, createVote, getActivities, getActivity, getLastEconomicFactor, rewardParameterUpdated } from '../../src/orm/activity'
+import { closeActivity, consumptionUpdated, createActivity, createVote, getActivities, getActivity, getLastEconomicFactor, modifyMetadata, rewardParameterUpdated } from '../../src/orm/activity'
 import { ADMIN, USER1, USER2, USER3, USER4, toUFix64 } from '../../src/orm/clientForTest'
 import moment from "moment";
 import { IConsumptionUpdatedFromEvent, ICreateOptionsFromEvent, IVotedOptionsFromEvent, IRewardParameterUpdatedFromEvent, RewardParameter, userValidActivityTypeEnum } from '../../src/interface/activity';
@@ -232,4 +232,15 @@ test('activities queryMany', async () => {
 
   const result5 = await getActivities({ limit: 10, createBy: '0x0000000000000000' })
   expect(result5[0].length).toBe(0)
+})
+
+test('update metadata', async () => {
+  const result = await modifyMetadata(0, {
+    content: "活动已经结束",
+    endDate: moment("2021-10-05 09+08:00"),
+  })
+  expect(result.content).toBe("活动已经结束")
+  expect(result.metadata["content"]).toBe("活动已经结束")
+  expect(result.endDate).not.toBeNull()
+  expect(result.metadata['endDate']).not.toBeNull()
 })

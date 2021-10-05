@@ -1,10 +1,11 @@
 import prisma from './clientForTest';
 // eslint-disable-next-line node/no-unpublished-import
-import { ActivityType, Vote } from '../prisma/client';
+import { ActivityType, Vote, Prisma } from '../prisma/client';
 import {
   ICloseOptionsFromTask,
   IConsumptionUpdatedFromEvent,
   ICreateOptionsFromEvent,
+  IModifyMetadataOptions,
   IQueryManyOptions,
   IRewardParameterUpdatedFromEvent,
   IVotedOptionsFromEvent,
@@ -185,6 +186,47 @@ export const getActivities = async ({
     }),
     prisma.activity.count({ where: filterCondition }),
   ]);
+};
+
+export const modifyMetadata = async (
+  id: number,
+  newMetadata: IModifyMetadataOptions
+) => {
+  const oldActivity = await prisma.activity.findUnique({
+    where: {
+      id,
+    },
+    select: {
+      metadata: true,
+      content: true,
+      startDate: true,
+      endDate: true,
+      source: true,
+    },
+  });
+
+  if (oldActivity?.metadata && typeof oldActivity?.metadata === 'object') {
+    const oldMetadata = oldActivity?.metadata as Prisma.JsonObject;
+    const combineData = Object.assign({}, oldMetadata, newMetadata);
+    const updatedActivity = await prisma.activity.update({
+      where: { id: id },
+      data: {
+        metadata: combineData,
+        content: combineData.content,
+        startDate:
+          typeof combineData.startDate === 'string'
+            ? combineData.startDate
+            : combineData.startDate.format(),
+        endDate:
+          typeof combineData.endDate === 'string'
+            ? combineData.endDate
+            : combineData.endDate.format(),
+        source: combineData.source,
+      },
+    });
+    return updatedActivity;
+  }
+  return;
 };
 
 /**

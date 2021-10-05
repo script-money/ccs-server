@@ -1,7 +1,8 @@
+import moment from 'moment';
 import { ActivitiesGetDTO } from '../dto/activity';
 // eslint-disable-next-line node/no-unpublished-import
 import { Activity, ActivityType } from '../prisma/client';
-import { Address, UFix64, UInt64 } from './flow';
+import { Address, compositeSignature, UFix64, UInt64 } from './flow';
 import { IResponse } from './utils';
 
 export interface ICreateOptionsFromEvent {
@@ -48,11 +49,18 @@ export interface IQueryManyOptions {
   createBy?: Address;
 }
 
-// interface IModifyOptions {
-//   id: number;
-//   message: string;
-//   signature: compositeSignature;
-// }
+export interface IModifyOptions {
+  id: number;
+  message: string;
+  compositeSignatures: compositeSignature[];
+}
+
+export interface IModifyMetadataOptions {
+  content?: string;
+  startDate?: moment.Moment;
+  endDate?: moment.Moment;
+  source?: string;
+}
 
 export enum userValidActivityTypeEnum {
   'Interact',
@@ -101,11 +109,11 @@ export interface IActivityService {
    */
   queryOne(id: number): Promise<IGetActivityResponse>;
 
-  // /**
-  //  * allow creater change activity's important data
-  //  * @param options id, message, compositeSignature
-  //  */
-  // update(options: IModifyOptions): Promise<Activity>;
+  /**
+   * allow creater change activity's metadata
+   * @param options id, message, compositeSignature
+   */
+  updateOne(options: IModifyOptions): Promise<IGetActivityResponse>;
 
   // /**
   //  * two condition cause activity close.
