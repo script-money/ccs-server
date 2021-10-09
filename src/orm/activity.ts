@@ -183,6 +183,9 @@ export const getActivities = async ({
       orderBy: {
         updatedAt: 'desc',
       },
+      include: {
+        creator: true,
+      },
     }),
     prisma.activity.count({ where: filterCondition }),
   ]);

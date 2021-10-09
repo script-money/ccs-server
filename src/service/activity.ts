@@ -24,8 +24,8 @@ export class ActivityService implements IActivityService {
         limit: limit === undefined ? 10 : Number(limit),
         offset: offset === undefined ? 0 : Number(offset),
         type,
-        canVote: canVote === undefined ? undefined : canVote === 'true',
-        canJoin: canJoin === undefined ? undefined : canJoin === 'true',
+        canVote: canVote === undefined ? undefined : String(canVote) === 'true',
+        canJoin: canJoin === undefined ? undefined : String(canJoin) === 'true',
         createBy,
       });
 
