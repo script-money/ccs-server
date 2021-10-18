@@ -50,6 +50,15 @@ export class ActivityService implements IActivityService {
   async queryOne(id: number): Promise<IGetActivityResponse> {
     try {
       const result = await getActivity(Number(id));
+      if (result === null) {
+        return {
+          success: false,
+          data: null,
+          errorCode: httpStatus.NOT_FOUND,
+          errorMessage: `No activity found by id ${id}`,
+          showType: 1,
+        };
+      }
       if (!result.closed) {
         const { voteResult, ...otherInfo } = result;
         return {

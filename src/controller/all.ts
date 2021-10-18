@@ -7,6 +7,7 @@ import {
   Query,
   Validate,
   Put,
+  Param,
 } from '@midwayjs/decorator';
 import { Context } from 'egg';
 
@@ -18,9 +19,10 @@ import {
 } from '../interface/activity';
 import { ActivitiesGetDTO } from '../dto/activity';
 import httpStatus from 'http-status';
+import { IGetUserResponse, IUserService } from '../interface/user';
 
 @Provide()
-@Controller('/api/activity')
+@Controller('/api')
 export class ActivityController {
   @Inject()
   activityService: IActivityService;
@@ -28,14 +30,26 @@ export class ActivityController {
   @Inject()
   ctx: Context;
 
-  @Get('/:id')
+  @Inject()
+  userService: IUserService;
+
+  // user
+  @Get('/user/:address')
+  async getUser(@Param('address') address: string): Promise<IGetUserResponse> {
+    const result = await this.userService.queryOne(address);
+    this.ctx.status = result.success ? httpStatus.OK : result.errorCode;
+    return result;
+  }
+
+  // activity
+  @Get('/activity/:id')
   async getActivity(): Promise<IGetActivityResponse> {
     const result = await this.activityService.queryOne(this.ctx.params.id);
     this.ctx.status = result.success ? httpStatus.OK : result.errorCode;
     return result;
   }
 
-  @Get('/')
+  @Get('/activity')
   @Validate()
   async getActivities(
     @Query(ALL) queryOptions: ActivitiesGetDTO
@@ -45,7 +59,7 @@ export class ActivityController {
     return result;
   }
 
-  @Put('/')
+  @Put('/activity')
   async updateActivity(
     @Query(ALL) queryOptions: IModifyOptions
   ): Promise<IGetActivityResponse> {
