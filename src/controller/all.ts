@@ -8,6 +8,7 @@ import {
   Validate,
   Put,
   Param,
+  Post,
 } from '@midwayjs/decorator';
 import { Context } from 'egg';
 
@@ -20,6 +21,10 @@ import {
 import { ActivitiesGetDTO } from '../dto/activity';
 import httpStatus from 'http-status';
 import { IGetUserResponse, IUserService } from '../interface/user';
+import {
+  ICCSTokenService,
+  IRequestFreeTokenResponse,
+} from '../interface/ccsToken';
 
 @Provide()
 @Controller('/api')
@@ -32,6 +37,9 @@ export class ActivityController {
 
   @Inject()
   userService: IUserService;
+
+  @Inject()
+  ccsTokenService: ICCSTokenService;
 
   // user
   @Get('/user/:address')
@@ -64,6 +72,16 @@ export class ActivityController {
     @Query(ALL) queryOptions: IModifyOptions
   ): Promise<IGetActivityResponse> {
     const result = await this.activityService.updateOne(queryOptions);
+    this.ctx.status = result.success ? httpStatus.OK : result.errorCode;
+    return result;
+  }
+
+  // token
+  @Post('/token/free')
+  async requestFreeToken(
+    @Query() address: string
+  ): Promise<IRequestFreeTokenResponse> {
+    const result = await this.ccsTokenService.requestFree(address);
     this.ctx.status = result.success ? httpStatus.OK : result.errorCode;
     return result;
   }

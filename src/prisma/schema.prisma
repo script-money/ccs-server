@@ -130,6 +130,12 @@ model TokenChangeRecord {
   comment     String?
 }
 
+model Faucet {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  address   String
+}
+
 enum TokenChangeType {
   BuyBallot
   CreateActivity

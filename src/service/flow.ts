@@ -1,16 +1,21 @@
-import { Inject, Provide } from '@midwayjs/decorator';
+import { Config, Inject, Provide } from '@midwayjs/decorator';
 import * as fcl from '@onflow/fcl';
 import { ec as EC } from 'elliptic';
 import { SHA3 } from 'sha3';
 const ec: EC = new EC('p256');
-import { Event, GetEventsOptions } from '../interface/flow';
+import { Address, Event, GetEventsOptions } from '../interface/flow';
 import { BlockCursorService } from './blockCursor';
 
 @Provide()
 export class FlowService {
-  private readonly minterFlowAddress: string;
-  private readonly minterPrivateKeyHex: string;
-  private readonly minterAccountIndex: string | number;
+  @Config('minterFlowAddress')
+  minterFlowAddress: Address;
+
+  @Config('minterPrivateKeyHex')
+  minterPrivateKeyHex: Address;
+
+  @Config('minterAccountIndex')
+  minterAccountIndex: string | number;
 
   @Inject()
   blockCursorService: BlockCursorService;
@@ -44,20 +49,17 @@ export class FlowService {
     return account;
   }
 
-  private signWithKey = (privateKey: string, msg: string) => {
+  private signWithKey = (privateKey: string, message: string) => {
     const key = ec.keyFromPrivate(Buffer.from(privateKey, 'hex'));
-    const sig = key.sign(this.hashMsg(msg));
+    const sha = new SHA3(256);
+    sha.update(Buffer.from(message, 'hex'));
+    const digest = sha.digest();
+    const sig = key.sign(digest);
     const n = 32;
     const r = sig.r.toArrayLike(Buffer, 'be', n);
     const s = sig.s.toArrayLike(Buffer, 'be', n);
     return Buffer.concat([r, s]).toString('hex');
   };
-
-  private hashMsg(msg: string) {
-    const sha = new SHA3(256);
-    sha.update(Buffer.from(msg, 'hex'));
-    return sha.digest();
-  }
 
   async sendTx({
     transaction,

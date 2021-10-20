@@ -3,6 +3,7 @@ import {
   ITokenAirdropFromEvent,
   IGetTokenChangeRecordsOptions,
 } from '../../src/interface/ccsToken';
+import { Address } from '../interface/flow';
 
 /**
  * create token airdrop record from event
@@ -45,6 +46,32 @@ export const getTokenChangeRecords = async (
     },
     orderBy: {
       createdAt: 'desc',
+    },
+  });
+};
+
+/**
+ * check if already get faucet
+ * @param addr address to check
+ * @returns facuet record
+ */
+export const getHistory = async (addr: Address) => {
+  return await prisma.faucet.findFirst({
+    where: {
+      address: addr,
+    },
+  });
+};
+
+/**
+ * create new faucet record
+ * @param addr address to add
+ * @returns new record
+ */
+export const addRecord = async (addr: Address) => {
+  return await prisma.faucet.create({
+    data: {
+      address: addr,
     },
   });
 };

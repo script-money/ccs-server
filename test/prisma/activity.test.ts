@@ -232,7 +232,7 @@ test('activities queryMany', async () => {
 
   const result5 = await getActivities({ limit: 10, createBy: '0x0000000000000000' })
   expect(result5[0].length).toBe(0)
-})
+}, 30000)
 
 test('update metadata', async () => {
   const result = await modifyMetadata(0, {
