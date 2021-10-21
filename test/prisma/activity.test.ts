@@ -216,22 +216,18 @@ test('activities queryMany', async () => {
     })
   }
 
-  const result1 = await getActivities({ limit: 10 })
+  const result1 = await getActivities({})
+
   const total = result1[1]
   expect(result1[0].length).toBe(10)
 
-  const result2 = await getActivities({ limit: 10, type: 'Register' })
+  const result2 = await getActivities({ type: 'Register' })
   expect(result2[0].length).toBeLessThan(total)
   expect(result2[1]).toBeLessThan(total)
 
-  const result3 = await getActivities({ limit: 10, type: 'Register', canJoin: true, canVote: false })
-  expect(result3[0].length).toBe(1)
-
-  const result4 = await getActivities({ limit: 10, type: 'LuckDraw', canJoin: false })
-  expect(result4[0].length).toBe(1)
-
-  const result5 = await getActivities({ limit: 10, createBy: '0x0000000000000000' })
-  expect(result5[0].length).toBe(0)
+  const result3 = await getActivities({ type: 'Register', canJoin: true, address: USER1 })
+  const result3_2 = await getActivities({ type: 'Register', canJoin: true, canVote: true, address: USER1 })
+  expect(result3_2[1]).toBeLessThan(result3[1])
 }, 30000)
 
 test('update metadata', async () => {

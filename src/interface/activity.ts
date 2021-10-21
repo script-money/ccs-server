@@ -41,10 +41,11 @@ export type RewardParameter = {
 };
 
 export interface IQueryManyOptions {
-  limit?: number;
-  offset?: number;
+  limit?: number | string;
+  offset?: number | string;
   type?: ActivityType;
   canVote?: boolean;
+  address?: Address;
   canJoin?: boolean;
   createBy?: Address;
 }

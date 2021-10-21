@@ -108,43 +108,72 @@ export const getActivity = async (id: number) => {
 
 /**
  * get activity list
- * @param param0 { limit?, offset?, type?, canVote?, canJoin?}
+ * @param param0 { limit?, offset?, type?, canVote?, address?, canJoin?, createBy}
  */
 export const getActivities = async ({
-  limit,
-  offset,
+  limit: limitSource,
+  offset: offsetSource,
   type,
-  canVote,
-  canJoin,
+  canVote: canVoteSource,
+  address: addressSource,
+  canJoin: canJoinSource,
   createBy,
 }: IQueryManyOptions) => {
-  // if canJoin is true，return endDate is nul OR gt now
-  // if canJoin is false，return lte now
-  // if canJoin is undified, not filt endDate
-  let filterCondition;
-  const otherConditions = [
-    {
-      closed: canVote === undefined ? undefined : !canVote,
-    },
-    {
-      categories: {
-        some: {
-          category: {
-            type,
+  const limit = limitSource === undefined ? 10 : Number(limitSource);
+  const offset = offsetSource === undefined ? 0 : Number(offsetSource);
+  const canVote =
+    canVoteSource === undefined ? false : String(canVoteSource) === 'true';
+  const address =
+    addressSource === undefined ? '0x0000000000000000' : addressSource;
+  const canJoin =
+    canJoinSource === undefined ? false : String(canJoinSource) === 'true';
+
+  const otherConditions = {
+    AND: [
+      {
+        categories: {
+          some: {
+            category: {
+              type,
+            },
           },
         },
       },
-    },
-    {
-      creator: {
-        address: createBy,
+      {
+        creator: {
+          address: createBy,
+        },
       },
-    },
-  ];
+    ],
+  };
 
-  if (canJoin === true) {
-    filterCondition = {
-      AND: otherConditions,
+  let addVoteCondition;
+
+  if (canVote) {
+    addVoteCondition = {
+      ...otherConditions,
+      NOT: {
+        voteResult: {
+          some: {
+            voterAddr: {
+              equals: address, // user voted list should not return
+            },
+          },
+        },
+      },
+      AND: {
+        closed: false,
+      },
+    };
+  } else {
+    addVoteCondition = otherConditions;
+  }
+
+  let addJoinCondition;
+
+  if (canJoin) {
+    addJoinCondition = {
+      ...addVoteCondition,
       OR: [
         {
           endDate: {
@@ -158,28 +187,15 @@ export const getActivities = async ({
         },
       ],
     };
-  } else if (canJoin === false) {
-    filterCondition = {
-      AND: otherConditions,
-      OR: [
-        {
-          endDate: {
-            lt: new Date(),
-          },
-        },
-      ],
-    };
-  } else if (canJoin === undefined) {
-    filterCondition = {
-      AND: otherConditions,
-    };
+  } else {
+    addJoinCondition = addVoteCondition;
   }
 
   return await prisma.$transaction([
     prisma.activity.findMany({
       skip: offset,
       take: limit,
-      where: filterCondition,
+      where: addJoinCondition,
       orderBy: {
         updatedAt: 'desc',
       },
@@ -187,7 +203,7 @@ export const getActivities = async ({
         creator: true,
       },
     }),
-    prisma.activity.count({ where: filterCondition }),
+    prisma.activity.count({ where: addJoinCondition }),
   ]);
 };
 

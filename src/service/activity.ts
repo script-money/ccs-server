@@ -19,15 +19,7 @@ export class ActivityService implements IActivityService {
 
   async queryMany(options: ActivitiesGetDTO): Promise<IGetActivitiesResponse> {
     try {
-      const { limit, offset, type, canVote, canJoin, createBy } = options;
-      const [activities, total] = await getActivities({
-        limit: limit === undefined ? 10 : Number(limit),
-        offset: offset === undefined ? 0 : Number(offset),
-        type,
-        canVote: canVote === undefined ? undefined : String(canVote) === 'true',
-        canJoin: canJoin === undefined ? undefined : String(canJoin) === 'true',
-        createBy,
-      });
+      const [activities, total] = await getActivities(options);
 
       return {
         success: true,

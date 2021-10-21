@@ -1,14 +1,15 @@
 import { Rule, RuleType } from '@midwayjs/decorator';
 import { userValidActivityTypeEnum } from '../interface/activity';
+import { Address } from '../interface/flow';
 // eslint-disable-next-line node/no-unpublished-import
 import { ActivityType } from '../prisma/client';
 
 export class ActivitiesGetDTO {
   @Rule(RuleType.number().max(10))
-  limit?: number | string;
+  limit?: number;
 
   @Rule(RuleType.number())
-  offset?: number | string;
+  offset?: number;
 
   @Rule(
     RuleType.any().valid(
@@ -20,10 +21,13 @@ export class ActivitiesGetDTO {
   type?: ActivityType;
 
   @Rule(RuleType.bool())
-  canVote?: boolean | string;
+  canVote?: boolean;
+
+  @Rule(RuleType.string())
+  address?: Address;
 
   @Rule(RuleType.bool())
-  canJoin?: boolean | string;
+  canJoin?: boolean;
 
   @Rule(RuleType.string())
   createBy?: string;
