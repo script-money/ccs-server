@@ -40,9 +40,9 @@ export class ccsTokenService implements ICCSTokenService {
       const result = await getHistory(addr);
       if (result !== null) {
         return {
-          success: false,
+          success: true,
           data: result,
-          errorCode: httpStatus.NOT_MODIFIED,
+          errorCode: httpStatus.ACCEPTED,
           errorMessage: 'user already request free tokens',
           showType: 1,
         };
