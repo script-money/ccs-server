@@ -1,5 +1,6 @@
 // eslint-disable-next-line node/no-unpublished-import
 import { User } from '../prisma/client';
+import { Address } from './flow';
 import { IResponse } from './utils';
 
 export interface IGetUserResponse extends IResponse {
@@ -8,4 +9,8 @@ export interface IGetUserResponse extends IResponse {
 
 export interface IUserService {
   queryOne(address: string): Promise<IGetUserResponse>;
+}
+
+export interface IAddUserFromEvent {
+  address: Address;
 }

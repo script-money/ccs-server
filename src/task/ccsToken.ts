@@ -1,7 +1,7 @@
 import { Provide, TaskLocal, Queue, Inject } from '@midwayjs/decorator';
 import { tokenAirdrop } from '../orm/CCSToken';
 import { Config } from '@midwayjs/decorator';
-import { TaskUtils } from './utils';
+import { LONG_INTERVAL, TaskUtils } from './utils';
 
 @Queue()
 @Provide()
@@ -11,16 +11,20 @@ export class CCSTokenTask {
   @Config('CCSToken')
   contractAddr: string;
 
+  @Config('maxRangeQueryBlock')
+  maxRangeQueryBlock: number;
+
   @Inject()
   taskUtils: TaskUtils;
 
-  @TaskLocal('0 0 * * *') // every day
+  @TaskLocal(LONG_INTERVAL) // every day
   async CCSTokensAirdrop() {
     await this.taskUtils.saveEventsToDB(
       this.contractAddr,
       this.contractName,
       'TokenAirdrop',
-      tokenAirdrop
+      tokenAirdrop,
+      this.maxRangeQueryBlock
     );
   }
 }

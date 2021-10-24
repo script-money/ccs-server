@@ -1,5 +1,4 @@
 import { ICreateOptionsFromEvent } from './activity';
-import * as t from '@onflow/types';
 
 export interface Event {
   blockId: Hash;
@@ -25,12 +24,19 @@ export interface activityCreateEvent {
 
 export interface flowInteractOptions {
   path: string;
-  params: Record<string, { value: any; type: t }>;
+  args: any[];
 }
 
 interface FclBase {
   f_type: string;
   f_vsn: '1.0.0';
+}
+
+export interface FlowTxData {
+  status: number;
+  statusCode: number;
+  errorMessage: string;
+  events: any[];
 }
 
 export interface compositeSignature extends FclBase {

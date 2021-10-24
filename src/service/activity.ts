@@ -7,15 +7,25 @@ import {
   IModifyMetadataOptions,
   IModifyOptions,
 } from '../interface/activity';
-import { getActivities, getActivity, modifyMetadata } from '../orm/activity';
+import {
+  closeActivity,
+  getActivities,
+  getActivitiesToClose,
+  getActivity,
+  modifyMetadata,
+} from '../orm/activity';
 import httpStatus from 'http-status';
 import { Context } from 'egg';
 import * as fcl from '@onflow/fcl';
+import { FlowService } from './flow';
 
 @Provide()
 export class ActivityService implements IActivityService {
   @Inject()
   ctx: Context;
+
+  @Inject()
+  flowService: FlowService;
 
   async queryMany(options: ActivitiesGetDTO): Promise<IGetActivitiesResponse> {
     try {
@@ -114,6 +124,30 @@ export class ActivityService implements IActivityService {
         errorMessage: `update activity ${id} content fail`,
         showType: 1,
       };
+    }
+  }
+
+  async close(intervalMinutes: number): Promise<IGetActivityResponse> {
+    console.log('Starting find activities to close...');
+    const activityIDs = await getActivitiesToClose(intervalMinutes);
+    if (activityIDs === null) {
+      console.log('No activities to close...');
+      return;
+    }
+    for await (const activityID of activityIDs) {
+      try {
+        const txArgList = await closeActivity({
+          id: activityID.id,
+        });
+        for await (const txArg of txArgList) {
+          console.log('txArg', txArg);
+          const TxId = await this.flowService.sendTxByAdmin(txArg);
+          await fcl.tx(TxId).onceSealed();
+        }
+      } catch (error) {
+        console.error(`close activiy ${activityID.id} error:`, error);
+        continue;
+      }
     }
   }
 }

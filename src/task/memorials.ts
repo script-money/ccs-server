@@ -12,8 +12,11 @@ import {
 export class MemorialsTask {
   contractName = 'Memorials';
 
-  @Config('Memorials')
+  @Config('memorials')
   contractAddr: string;
+
+  @Config('midRangeQueryBlock')
+  midRangeQueryBlock: number;
 
   @Inject()
   taskUtils: TaskUtils;
@@ -24,7 +27,8 @@ export class MemorialsTask {
       this.contractAddr,
       this.contractName,
       'memorialMinted',
-      createMemorial
+      createMemorial,
+      this.midRangeQueryBlock
     );
 
     await this.taskUtils.saveEventsToDB(
@@ -32,6 +36,7 @@ export class MemorialsTask {
       this.contractName,
       'Withdraw',
       withDrawMemorials,
+      this.midRangeQueryBlock,
       lastBlock
     );
 
@@ -40,6 +45,7 @@ export class MemorialsTask {
       this.contractName,
       'Deposit',
       depositMemorials,
+      this.midRangeQueryBlock,
       lastBlock
     );
   }

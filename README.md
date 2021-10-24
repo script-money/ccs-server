@@ -10,7 +10,7 @@ The server side is responsible for
 
 ## prepare
 
-1. copy .cdc files from cadence folder `cp -r ../cadence/ cadence/`
+1. copy .cdc files from cadence folder `rsync -av --progress ../cadence/ cadence/ --exclude .git/ --exclude tests/`
 2. launch postgres `docker run --name postgres -e POSTGRES_PASSWORD=password -e POSTGRES_DB=ccs -p 5432:5432 -d postgres`
 3. run `cd src/prisma && cp .env.example .env` then modify .env to connect postgres
 4. `npx prisma migrate dev --name initial` to generate prisma client files

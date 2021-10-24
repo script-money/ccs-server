@@ -25,7 +25,7 @@ model User {
   avatar            String?
   flowns            String?
   name              String?
-  votingPower       Float               @default(1.0) @db.Real
+  votingPower       Float               @default(0.01) @db.Real
   activities        Activity[]
   votes             Vote[]
   memorials         Memorial[]
@@ -73,13 +73,15 @@ model CategoriesOnActivities {
 }
 
 model Vote {
-  id         Int      @id @default(autoincrement())
+  id         Int      @default(autoincrement())
   voter      User     @relation(fields: [voterAddr], references: [address])
   voterAddr  String
   isUpVote   Boolean  @default(true)
   power      Float    @default(1.0) @db.Real
   activity   Activity @relation(fields: [activityId], references: [id])
   activityId Int
+
+  @@unique([voterAddr, activityId])
 }
 
 model EconomicFactor {

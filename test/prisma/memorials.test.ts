@@ -86,7 +86,7 @@ test('can save memorials to database', async () => {
   await depositMemorials(depositData2)
 
   const user1 = await getUser(USER1)
-  expect(user1.votingPower).toEqual(1.01)
+  expect(user1.votingPower).toEqual(0.02)
   const user2 = await getUser(USER2)
-  expect(user2.votingPower).toEqual(1.01)
+  expect(user2.votingPower).toEqual(0.02)
 })

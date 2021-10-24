@@ -1,17 +1,15 @@
-import { Config, Inject, Provide } from '@midwayjs/decorator';
+import { Inject, Provide } from '@midwayjs/decorator';
 import { BlockCursorService } from '../service/blockCursor';
 import { FlowService } from '../service/flow';
 import * as fcl from '@onflow/fcl';
 import { Event } from '../interface/flow';
 
 export const SHORT_INTERVAL = '*/20 * * * * *'; // every 20 seconds
-export const MID_INTERVAL = '* * * * *'; // every minutes
+export const MID_INTERVAL = '*/3 * * * *'; // every 3 minutes
+export const LONG_INTERVAL = '0 0 * * *'; // every day 0:00
 
 @Provide()
 export class TaskUtils {
-  @Config('maxQueryBlock')
-  maxQueryBlock: number;
-
   @Inject()
   flowService: FlowService;
 
@@ -24,6 +22,8 @@ export class TaskUtils {
    * @param contractName name of contract
    * @param eventName eventname of contract
    * @param ormFunction orm funtion to call
+   * @param queryBlockRange: get events range per request
+   * @param lastBlock?: if lastBlock is set, jump request height from blockchain
    * @returns Promise<number> last block
    */
   async saveEventsToDB(
@@ -31,6 +31,7 @@ export class TaskUtils {
     contractName: string,
     eventName: string,
     ormFunction: (evenData: any) => Promise<any>,
+    queryBlockRange: number,
     lastBlock?: number
   ): Promise<number> {
     const blockCursor =
@@ -48,7 +49,7 @@ export class TaskUtils {
       return;
     }
 
-    const epoch = Math.floor(interval / this.maxQueryBlock);
+    const epoch = Math.floor(interval / queryBlockRange);
     if (epoch === 0) {
       // console.log(`interval is ${interval}, wait for next query`);
       return;
@@ -56,7 +57,7 @@ export class TaskUtils {
 
     // if block behind a lot, should send N blocks per request to catch up
     for (const i of [...Array(epoch).keys()]) {
-      const queryEndAt = initStartBlock + (i + 1) * this.maxQueryBlock;
+      const queryEndAt = initStartBlock + (i + 1) * queryBlockRange;
 
       const result = await this.flowService.getEvents({
         contractAddr: fcl.sansPrefix(contractAddr),
@@ -67,7 +68,7 @@ export class TaskUtils {
 
       if (result !== undefined && result.length !== 0) {
         result.forEach(async (event: Event) => {
-          console.log(`save ${event.data} to database`);
+          console.log('save event.data to database', event.data);
           await ormFunction(event.data);
         });
       }

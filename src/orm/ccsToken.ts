@@ -68,7 +68,7 @@ export const getHistory = async (addr: Address) => {
  * @param addr address to add
  * @returns new record
  */
-export const addRecord = async (addr: Address) => {
+export const addFacuetRecord = async (addr: Address) => {
   return await prisma.faucet.create({
     data: {
       address: addr,

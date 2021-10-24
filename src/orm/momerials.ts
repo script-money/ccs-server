@@ -133,6 +133,12 @@ export const withDrawMemorials = async (eventData: IWithdrawFromEvent) => {
  * @param eventData withDraw memorials event
  */
 export const depositMemorials = async (eventData: IDepositFromEvent) => {
+  const tmpMemorial = await prisma.memorial.findUnique({
+    where: {
+      id: eventData.id,
+    },
+  });
+  if (tmpMemorial === null || tmpMemorial.ownerAddress === eventData.to) return;
   const memorial = await prisma.memorial.update({
     data: {
       ownerAddress: eventData.to,

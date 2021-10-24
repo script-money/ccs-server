@@ -7,7 +7,13 @@ import {
   rewardParameterUpdated,
 } from '../orm/activity';
 import { Config } from '@midwayjs/decorator';
-import { SHORT_INTERVAL, TaskUtils } from './utils';
+import {
+  LONG_INTERVAL,
+  MID_INTERVAL,
+  SHORT_INTERVAL,
+  TaskUtils,
+} from './utils';
+import { ActivityService } from '../service/activity';
 
 @Queue()
 @Provide()
@@ -16,6 +22,18 @@ export class ActivityTask {
 
   @Config('activityContract')
   contractAddr: string;
+
+  @Config('shortQueryBlock')
+  shortQueryBlock: number;
+
+  @Config('maxRangeQueryBlock')
+  maxRangeQueryBlock: number;
+
+  @Config('closeActivityIntervalMinutes')
+  closeActivityIntervalMinutes: number;
+
+  @Inject()
+  activityService: ActivityService;
 
   @Inject()
   taskUtils: TaskUtils;
@@ -26,7 +44,8 @@ export class ActivityTask {
       this.contractAddr,
       this.contractName,
       'activityCreated',
-      createActivity
+      createActivity,
+      this.shortQueryBlock
     );
 
     await this.taskUtils.saveEventsToDB(
@@ -34,6 +53,7 @@ export class ActivityTask {
       this.contractName,
       'activityVoted',
       createVote,
+      this.shortQueryBlock,
       lastBlock
     );
 
@@ -42,24 +62,33 @@ export class ActivityTask {
       this.contractName,
       'activityClosed',
       closeActivity,
+      this.shortQueryBlock,
       lastBlock
     );
   }
 
-  @TaskLocal('0 0 * * *') // every day 00:00
+  @TaskLocal(LONG_INTERVAL)
   async parameterUpdate() {
-    await this.taskUtils.saveEventsToDB(
+    const lastBlock = await this.taskUtils.saveEventsToDB(
       this.contractAddr,
       this.contractName,
       'consumptionUpdated',
-      consumptionUpdated
+      consumptionUpdated,
+      this.maxRangeQueryBlock
     );
 
     await this.taskUtils.saveEventsToDB(
       this.contractAddr,
       this.contractName,
       'rewardParameterUpdated',
-      rewardParameterUpdated
+      rewardParameterUpdated,
+      this.maxRangeQueryBlock,
+      lastBlock
     );
+  }
+
+  @TaskLocal(MID_INTERVAL)
+  async closeActivity() {
+    await this.activityService.close(this.closeActivityIntervalMinutes);
   }
 }

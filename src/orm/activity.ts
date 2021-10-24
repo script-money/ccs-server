@@ -12,7 +12,9 @@ import {
 } from '../interface/activity';
 import moment from 'moment';
 import * as t from '@onflow/types';
+import * as fcl from '@onflow/fcl';
 import { flowInteractOptions } from '../interface/flow';
+import { toUFix64 } from '../orm/clientForTest';
 
 /**
  * add activity record to db
@@ -207,6 +209,25 @@ export const getActivities = async ({
   ]);
 };
 
+/**
+ * get activity to close
+ * @returns activity[] | null
+ */
+export const getActivitiesToClose = async (intervalMinutes: number) => {
+  const activityIds = await prisma.activity.findMany({
+    where: {
+      closed: false,
+      createdAt: {
+        gt: moment().subtract(intervalMinutes, 'minutes').toDate(),
+      },
+    },
+    select: {
+      id: true,
+    },
+  });
+  return activityIds;
+};
+
 export const modifyMetadata = async (
   id: number,
   newMetadata: IModifyMetadataOptions
@@ -254,6 +275,8 @@ export const modifyMetadata = async (
  * @returns newVote
  */
 export const createVote = async (eventData: IVotedOptionsFromEvent) => {
+  console.log('eventData', eventData);
+
   const voter = await prisma.user.upsert({
     where: { address: eventData.voter },
     update: {},
@@ -261,6 +284,19 @@ export const createVote = async (eventData: IVotedOptionsFromEvent) => {
       address: eventData.voter,
     },
   });
+
+  const result = await prisma.vote.findUnique({
+    where: {
+      voterAddr_activityId: {
+        voterAddr: eventData.voter,
+        activityId: eventData.id,
+      },
+    },
+  });
+
+  if (result !== null) {
+    return;
+  }
 
   const newVote = await prisma.vote.create({
     data: {
@@ -526,42 +562,28 @@ export const closeActivity = async (options: ICloseOptionsFromTask) => {
     });
   }
 
-  // 6. return services paramters use by send transactions to blockchain
+  // 6. return services parameters use by send transactions to blockchain
   return [
     {
-      path: 'transactions/CCSToken/mint_tokens_and_distribute',
-      params: {
-        addressAmountMap: {
-          value: [{ [activity.creator.address]: rewardToken }],
-          type: t.Dictionary({ key: t.Address, value: t.UFix64 }),
-        },
-      },
+      path: 'CCSToken/mint_tokens_and_distribute.cdc',
+      args: [
+        fcl.arg(
+          [{ key: activity.creator.address, value: toUFix64(rewardToken) }],
+          t.Dictionary({ key: t.Address, value: t.UFix64 })
+        ),
+      ],
     },
     {
-      path: 'transactions/Ballot/set_price',
-      params: {
-        price: {
-          value: newBallotPrice,
-          type: t.UFix64,
-        },
-      },
+      path: 'Ballot/set_price.cdc',
+      args: [fcl.arg(toUFix64(newBallotPrice), t.UFix64)],
     },
     {
-      path: 'transactions/Activity/close_activity',
-      params: {
-        _activityID: {
-          value: options.id,
-          type: t.UInt64,
-        },
-        bonus: {
-          value: bonus,
-          type: t.UFix64,
-        },
-        mintPositive: {
-          value: mintPositive,
-          type: t.Bool,
-        },
-      },
+      path: 'Activity/close_activity.cdc',
+      args: [
+        fcl.arg(options.id, t.UInt64),
+        fcl.arg(toUFix64(bonus), t.UFix64),
+        fcl.arg(mintPositive, t.Bool),
+      ],
     },
   ] as flowInteractOptions[];
 };

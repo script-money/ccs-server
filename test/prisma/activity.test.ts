@@ -36,8 +36,8 @@ test('user2 can vote up', async () => {
   const vote = {
     id: 0,
     voter: USER2,
-    isUpVote: true
-  } as IVotedOptionsFromEvent
+    isUpVote: true,
+  }
 
   await createVote(vote)
 
@@ -50,13 +50,13 @@ test('user3 and user4 vote down', async () => {
   const vote1 = {
     id: 0,
     voter: USER3,
-    isUpVote: false
+    isUpVote: false,
   } as IVotedOptionsFromEvent
 
   const vote2 = {
     id: 0,
     voter: USER4,
-    isUpVote: false
+    isUpVote: false,
   } as IVotedOptionsFromEvent
 
   await createVote(vote1)
@@ -158,7 +158,7 @@ test('can create new activity (positive)', async () => {
   const vote = {
     id: 1,
     voter: USER3,
-    isUpVote: true
+    isUpVote: true,
   } as IVotedOptionsFromEvent
 
   await createVote(vote)
