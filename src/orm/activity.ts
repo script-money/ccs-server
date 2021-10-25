@@ -30,15 +30,20 @@ export const createActivity = async (eventData: ICreateOptionsFromEvent) => {
     orderBy: { id: 'desc' },
   });
 
+  let creatorPartly;
   // get creater power
-  const creatorPartly = await prisma.user.upsert({
-    where: { address: eventData.creator },
-    update: {},
-    create: { address: eventData.creator },
-    select: {
-      votingPower: true,
-    },
-  });
+  try {
+    creatorPartly = await prisma.user.upsert({
+      where: { address: eventData.creator },
+      update: {},
+      create: { address: eventData.creator },
+      select: {
+        votingPower: true,
+      },
+    });
+  } catch (error) {
+    console.warn('createActivity:', error);
+  }
 
   const newActivity = await prisma.activity.create({
     data: {
@@ -275,8 +280,6 @@ export const modifyMetadata = async (
  * @returns newVote
  */
 export const createVote = async (eventData: IVotedOptionsFromEvent) => {
-  console.log('eventData', eventData);
-
   const voter = await prisma.user.upsert({
     where: { address: eventData.voter },
     update: {},
@@ -408,10 +411,6 @@ export const getEconomicFactors = async () => {
  * @returns paramters with send transactions
  */
 export const closeActivity = async (options: ICloseOptionsFromTask) => {
-  const { id, ...factor } = await prisma.economicFactor.findFirst({
-    orderBy: { id: 'desc' },
-  });
-
   // 1. find voter's votingPower by activity id, compute activity is positive or negative
   const activity = await prisma.activity.findUnique({
     where: { id: options.id },
@@ -420,7 +419,14 @@ export const closeActivity = async (options: ICloseOptionsFromTask) => {
       voteResult: true,
       creator: true,
       title: true,
+      closed: true,
     },
+  });
+
+  if (activity.closed) return;
+
+  const { id, ...factor } = await prisma.economicFactor.findFirst({
+    orderBy: { id: 'desc' },
   });
 
   const positiveTotalVotingPower = Math.abs(

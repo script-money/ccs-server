@@ -1,4 +1,4 @@
-import { Inject, Provide } from '@midwayjs/decorator';
+import { Config, Inject, Provide } from '@midwayjs/decorator';
 // eslint-disable-next-line node/no-unpublished-import
 import { PrismaClient } from '../prisma/client';
 import { FlowService } from './flow';
@@ -7,6 +7,9 @@ import { FlowService } from './flow';
 export class BlockCursorService {
   @Inject('prisma')
   prismaClient: PrismaClient;
+
+  @Config('startHeight')
+  startHeight: number;
 
   @Inject()
   flowService: FlowService;
@@ -22,7 +25,8 @@ export class BlockCursorService {
       blockCursor = await this.prismaClient.blockCursor.create({
         data: {
           eventName,
-          currentHeight: await this.flowService.getLatestBlockHeight(),
+          currentHeight:
+            this.startHeight ?? (await this.flowService.getLatestBlockHeight()),
         },
       });
     }

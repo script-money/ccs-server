@@ -1,4 +1,7 @@
+import { getMemorialsByUser } from '../orm/momerials';
+import { Prisma } from '../prisma/client';
 import { Address, UFix64, UInt64, UInt8 } from './flow';
+import { IResponse } from './utils';
 
 export interface IDepositFromEvent {
   id: UInt64;
@@ -24,4 +27,14 @@ export interface IMemorialMintedFromEvent {
 export interface IGetMemorialsOptions {
   activityId?: number;
   userAddress?: Address;
+}
+
+type MemorialsGetType = Prisma.PromiseReturnType<typeof getMemorialsByUser>;
+
+export interface IGetMemorialsResponse extends IResponse {
+  data: MemorialsGetType | null;
+}
+
+export interface IMemorialsService {
+  queryMany(option: IGetMemorialsOptions): Promise<IGetMemorialsResponse>;
 }

@@ -139,10 +139,10 @@ export class ActivityService implements IActivityService {
         const txArgList = await closeActivity({
           id: activityID.id,
         });
-        for await (const txArg of txArgList) {
+        for (const txArg of txArgList) {
           console.log('txArg', txArg);
-          const TxId = await this.flowService.sendTxByAdmin(txArg);
-          await fcl.tx(TxId).onceSealed();
+          const result = await this.flowService.sendTxByAdmin(txArg);
+          if (result !== undefined) await fcl.tx(result).onceSealed();
         }
       } catch (error) {
         console.error(`close activiy ${activityID.id} error:`, error);

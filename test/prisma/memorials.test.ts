@@ -2,7 +2,7 @@ import { closeActivity, createActivity, createVote, getActivity } from '../../sr
 import { ADMIN, USER1, USER2, USER3, USER4, toUFix64 } from '../../src/orm/clientForTest'
 import moment from "moment";
 import { ICreateOptionsFromEvent, IVotedOptionsFromEvent } from '../../src/interface/activity';
-import { createMemorial, depositMemorials, getMemorial } from '../../src/orm/momerials';
+import { createMemorial, depositMemorials, getMemorial, getMemorialsByActivity, getMemorialsByUser } from '../../src/orm/momerials';
 import { getUser } from '../../src/orm/user';
 
 
@@ -86,7 +86,13 @@ test('can save memorials to database', async () => {
   await depositMemorials(depositData2)
 
   const user1 = await getUser(USER1)
-  expect(user1.votingPower).toEqual(0.02)
+  expect(user1.votingPower).toEqual(0.01)
   const user2 = await getUser(USER2)
-  expect(user2.votingPower).toEqual(0.02)
+  expect(user2.votingPower).toEqual(0.01)
+
+  const memorials1 = await getMemorialsByActivity(1)
+  expect(memorials1.length).toEqual(2)
+
+  const memorials2 = await getMemorialsByUser(USER1)
+  expect(memorials2[0].id).toBe(1)
 })

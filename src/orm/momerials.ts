@@ -12,7 +12,7 @@ import { Address, UInt64 } from '../../src/interface/flow';
  * @returns memorial created
  */
 export const createMemorial = async (eventData: IMemorialMintedFromEvent) => {
-  return await prisma.memorial.create({
+  const newMemorial = await prisma.memorial.create({
     data: {
       version: eventData.version,
       owner: {
@@ -32,16 +32,29 @@ export const createMemorial = async (eventData: IMemorialMintedFromEvent) => {
       bonus: parseFloat(eventData.bonus),
     },
   });
+
+  await prisma.user.update({
+    data: {
+      votingPower: {
+        increment: newMemorial.bonus,
+      },
+    },
+    where: {
+      address: eventData.reciever,
+    },
+  });
+  return newMemorial;
 };
 
 /**
  * front display information to select
  */
-const memorialSelector = {
+export const memorialSelector = {
   id: true,
   ownerAddress: true,
   activity: {
     select: {
+      id: true,
       title: true,
       startDate: true,
       endDate: true,

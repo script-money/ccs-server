@@ -149,7 +149,7 @@ export class FlowService {
       });
       return txId;
     } catch (error) {
-      return error;
+      console.log(`Error execute ${option.path}`, error);
     }
   }
 

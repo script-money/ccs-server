@@ -24,6 +24,7 @@ export const shortQueryBlock = 20; // fit every 20 seconds
 export const midRangeQueryBlock = 60; // fit greater than 1 minute
 export const maxRangeQueryBlock = 250;
 export const closeActivityIntervalMinutes = 3;
+export const startHeight = 0;
 
 export const minterFlowAddress = config.wallets[0].address;
 export const minterPrivateKeyHex = config.wallets[0].keys[0].privateKey;

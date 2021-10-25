@@ -25,6 +25,9 @@ import {
   ICCSTokenService,
   IRequestFreeTokenResponse,
 } from '../interface/ccsToken';
+import { MemorialsGetDTO } from '../dto/memorials';
+import { IGetMemorialsResponse } from '../interface/momerials';
+import { MemorialsService } from '../service/memorials';
 
 @Provide()
 @Controller('/api')
@@ -40,6 +43,9 @@ export class ActivityController {
 
   @Inject()
   ccsTokenService: ICCSTokenService;
+
+  @Inject()
+  memorialsService: MemorialsService;
 
   // user
   @Get('/user/:address')
@@ -82,6 +88,17 @@ export class ActivityController {
     @Query() address: string
   ): Promise<IRequestFreeTokenResponse> {
     const result = await this.ccsTokenService.requestFree(address);
+    this.ctx.status = result.success ? httpStatus.OK : result.errorCode;
+    return result;
+  }
+
+  // memorials
+  @Get('/memorials')
+  @Validate()
+  async getMemorials(
+    @Query(ALL) queryOption: MemorialsGetDTO
+  ): Promise<IGetMemorialsResponse> {
+    const result = await this.memorialsService.queryMany(queryOption);
     this.ctx.status = result.success ? httpStatus.OK : result.errorCode;
     return result;
   }
