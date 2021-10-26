@@ -49,6 +49,7 @@
     "start_build": "npm run build && cross-env NODE_ENV=development midway-bin dev",
     "copy_config": "cp ../dappstarter/packages/dapplib/src/dapp-config.json src/config",
     "dev": "yarn copy_config && cross-env ets && cross-env NODE_ENV=local midway-bin dev --ts",
+    "testnet": "MIDWAY_SERVER_ENV=testnet midway-bin dev --ts",
     "test": "midway-bin test",
     "test:db": "yarn test:db:act && yarn test:db:mem && yarn test:db:bal && yarn test:db:ccs",
     "test:db:act": "npx prisma migrate reset -f && midway-bin test --ts --detectOpenHandles -f ./test/prisma/activity.test.ts",

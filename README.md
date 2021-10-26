@@ -27,3 +27,12 @@ The server side is responsible for
 ## how to test ORM
 
 test ORM with `yarn test:db`
+
+## how to run local testnet development environment
+
+1. run redis, postgres and nginx containers in docker
+2. use `npx prisma migrate reset` to initiate postgres (if need)
+3. config flow config at `src/config/config.testnet.ts`
+4. use `yarn testnet` to launch server
+5. use `npx prisma studio` to check database in GUI (if need)
+6. use `npx kill-port 7001` to close server (if need)
