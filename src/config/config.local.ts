@@ -11,6 +11,15 @@ export const taskConfig = {
   },
 };
 
+export const redis = {
+  client: {
+    port: 6379, // Redis port
+    host: '127.0.0.1', // Redis host
+    password: '',
+    db: 1,
+  },
+};
+
 fcl.config().put('accessNode.api', config.httpUri);
 
 export const fungibleToken = config.contracts['Flow.FungibleToken'];
@@ -27,7 +36,6 @@ export const closeActivityIntervalMinutes = 3;
 export const startHeight = 0;
 
 export const minterFlowAddress = config.wallets[0].address;
-export const minterPrivateKeyHex = config.wallets[0].keys[0].privateKey;
-export const minterAccountIndex = config.wallets[0].keys[0].keyId;
+export const minterKeys = [config.wallets[0].keys[0]];
 
 export const facuetAmount = 1000;

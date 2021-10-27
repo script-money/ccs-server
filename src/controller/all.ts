@@ -88,7 +88,8 @@ export class ActivityController {
     @Query() address: string
   ): Promise<IRequestFreeTokenResponse> {
     const result = await this.ccsTokenService.requestFree(address);
-    this.ctx.status = result.success ? httpStatus.OK : result.errorCode;
+    this.ctx.status =
+      result !== undefined && result.success ? httpStatus.OK : result.errorCode;
     return result;
   }
 

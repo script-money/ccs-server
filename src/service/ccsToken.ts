@@ -46,7 +46,7 @@ export class ccsTokenService implements ICCSTokenService {
         };
       }
 
-      const txResult = this.flowService.sendTxByAdmin({
+      const txResult = await this.flowService.sendTxByAdmin({
         path: 'CCSToken/mint_tokens_and_distribute.cdc',
         args: [
           fcl.arg(
@@ -64,13 +64,12 @@ export class ccsTokenService implements ICCSTokenService {
         };
       }
     } catch (error) {
-      console.warn(error);
       return {
         success: false,
         data: null,
-        errorCode: httpStatus.INTERNAL_SERVER_ERROR,
-        errorMessage: error,
-        showType: 2,
+        errorCode: httpStatus.ACCEPTED,
+        errorMessage: error.toString().split('\n')[1],
+        showType: 1,
       };
     }
   }

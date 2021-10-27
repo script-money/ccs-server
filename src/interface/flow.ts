@@ -45,6 +45,13 @@ export interface compositeSignature extends FclBase {
   signature: string; // Signature as a hex string
 }
 
+export interface Key {
+  publicKey: string;
+  privateKey: string;
+  keyId: number;
+  weight: number;
+}
+
 export type Address = string;
 export type UFix64 = string; // flow's UFix64 in fcl is string
 export type UInt64 = number;

@@ -6,6 +6,7 @@ import * as task from '@midwayjs/task';
 // eslint-disable-next-line node/no-unpublished-import
 import { PrismaClient } from './prisma/client';
 import { join } from 'path';
+import * as redis from '@midwayjs/redis';
 
 // Prisma require env variables
 dotenv.config();
@@ -13,7 +14,7 @@ dotenv.config();
 const client = new PrismaClient();
 
 @Configuration({
-  imports: [task],
+  imports: [task, redis],
   importConfigs: [
     join(__dirname, './config/config.default'),
     join(__dirname, './config/config.local'),

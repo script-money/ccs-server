@@ -128,7 +128,6 @@ export class ActivityService implements IActivityService {
   }
 
   async close(intervalMinutes: number): Promise<IGetActivityResponse> {
-    console.log('Starting find activities to close...');
     const activityIDs = await getActivitiesToClose(intervalMinutes);
     if (activityIDs === null) {
       console.log('No activities to close...');

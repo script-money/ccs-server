@@ -11,8 +11,10 @@ import {
   flowInteractOptions,
   FlowTxData,
   GetEventsOptions,
+  Key,
 } from '../interface/flow';
 import { BlockCursorService } from './blockCursor';
+import { RedisService } from '@midwayjs/redis';
 
 const FungibleTokenPath = '"../../contracts/FungibleToken.cdc"';
 const ActivityContractPath = '"../../contracts/ActivityContract.cdc"';
@@ -23,14 +25,14 @@ const MemorialsPath = '"../../contracts/Memorials.cdc"';
 
 @Provide()
 export class FlowService {
+  @Inject()
+  redisService: RedisService;
+
   @Config('minterFlowAddress')
   minterFlowAddress: Address;
 
-  @Config('minterPrivateKeyHex')
-  minterPrivateKeyHex: Address;
-
-  @Config('minterAccountIndex')
-  minterAccountIndex: string | number;
+  @Config('minterKeys')
+  minterKeys: Key[];
 
   @Config('fungibleToken')
   fungibleToken: Address;
@@ -53,23 +55,26 @@ export class FlowService {
   @Inject()
   blockCursorService: BlockCursorService;
 
-  authorizeMinter() {
+  authorizeMinter(keyToUse: Key) {
+    if (keyToUse === undefined) {
+      return;
+    }
     return async (account: any = {}) => {
       const user = await this.getAccount(this.minterFlowAddress);
-      const key = user.keys[this.minterAccountIndex];
+      const keyId = keyToUse.keyId;
 
       const sign = this.signWithKey;
-      const pk = this.minterPrivateKeyHex;
+      const pk = keyToUse.privateKey;
 
       return {
         ...account,
-        tempId: `${user.address}-${key.index}`,
+        tempId: `${user.address}-${keyId}`,
         addr: fcl.sansPrefix(user.address),
-        keyId: Number(key.index),
+        keyId: Number(keyId),
         signingFunction: signable => {
           return {
             addr: fcl.withPrefix(user.address),
-            keyId: Number(key.index),
+            keyId: Number(keyId),
             signature: sign(pk, signable.message),
           };
         },
@@ -126,7 +131,13 @@ export class FlowService {
   }
 
   async sendTxByAdmin(option: flowInteractOptions) {
-    const authorization = this.authorizeMinter();
+    const seqNumberValue = await this.redisService.get('seqNumber');
+    const seqNumber = seqNumberValue ? Number(seqNumberValue) : 0;
+    const keyIndexToUse = seqNumber % this.minterKeys.length;
+    console.log('keyIndexToUse:', keyIndexToUse);
+    const keyToUse = this.minterKeys[keyIndexToUse];
+    await this.redisService.incr('seqNumber');
+    const authorization = this.authorizeMinter(keyToUse);
 
     const transaction = readFileSync(
       join(__dirname, '../../cadence/transactions/', option.path),
@@ -150,6 +161,7 @@ export class FlowService {
       return txId;
     } catch (error) {
       console.log(`Error execute ${option.path}`, error);
+      throw new Error(error);
     }
   }
 
@@ -165,9 +177,9 @@ export class FlowService {
 
     if (savedCursor.currentHeight + 1 >= endBlock) return;
 
-    console.log(
-      `query ${key} from ${savedCursor.currentHeight + 1} to ${endBlock}`
-    );
+    // console.log(
+    //   `query ${key} from ${savedCursor.currentHeight + 1} to ${endBlock}`
+    // );
 
     const events: Event[] = await fcl
       .send([

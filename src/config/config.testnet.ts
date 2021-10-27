@@ -12,6 +12,15 @@ export const taskConfig = {
   },
 };
 
+export const redis = {
+  client: {
+    port: 6379, // Redis port
+    host: '127.0.0.1', // Redis host
+    password: '',
+    db: 1,
+  },
+};
+
 fcl
   .config()
   .put('accessNode.api', 'https://access-testnet.onflow.org')
@@ -28,10 +37,28 @@ export const shortQueryBlock = 20; // fit every 20 seconds
 export const midRangeQueryBlock = 60; // fit greater than 1 minute
 export const maxRangeQueryBlock = 250;
 export const closeActivityIntervalMinutes = 3;
-export const startHeight = 49260515; // check at https://testnet.flowscan.org/
+export const startHeight = 49360871; // check at https://testnet.flowscan.org/
 
 export const minterFlowAddress = process.env.TESTNET_MINTER_ADDRESS;
-export const minterPrivateKeyHex = process.env.TESTNET_PRIVATE_KEY;
-export const minterAccountIndex = process.env.TESTNET_KEY_INDEX;
+export const minterKeys = [
+  {
+    publicKey: process.env.TESTNET_PUBLICKEY_0,
+    privateKey: process.env.TESTNET_PRIVATEKEY_0,
+    keyId: process.env.TESTNET_KEYINDEX_0,
+    weight: 1000,
+  },
+  {
+    publicKey: process.env.TESTNET_PUBLICKEY_1,
+    privateKey: process.env.TESTNET_PRIVATEKEY_1,
+    keyId: process.env.TESTNET_KEYINDEX_1,
+    weight: 1000,
+  },
+  {
+    publicKey: process.env.TESTNET_PUBLICKEY_2,
+    privateKey: process.env.TESTNET_PRIVATEKEY_2,
+    keyId: process.env.TESTNET_KEYINDEX_2,
+    weight: 1000,
+  },
+];
 
 export const facuetAmount = 1000;

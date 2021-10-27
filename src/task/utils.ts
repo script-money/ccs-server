@@ -68,7 +68,7 @@ export class TaskUtils {
 
       if (result !== undefined && result.length !== 0) {
         result.forEach(async (event: Event) => {
-          console.log('save event.data to database', event.data);
+          console.log(`save ${ormFunction.name} event to db`, event.data);
           await ormFunction(event.data);
         });
       }

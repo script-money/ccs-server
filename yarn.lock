@@ -877,6 +877,13 @@
   resolved "https://registry.npmmirror.com/@midwayjs/orm/download/@midwayjs/orm-2.13.3.tgz#442ee4fae988bb778af628c35e70c83403094df5"
   integrity sha1-RC7k+umIu3eK9ijDXnDINAMJTfU=
 
+"@midwayjs/redis@^2.13.4":
+  version "2.13.4"
+  resolved "https://registry.npmmirror.com/@midwayjs/redis/download/@midwayjs/redis-2.13.4.tgz#aea815a2d5fb8127027b5357e882b9fdf86edacc"
+  integrity sha1-rqgVotX7gScCe1NX6IK5/fhu2sw=
+  dependencies:
+    ioredis "^4.27.1"
+
 "@midwayjs/serverless-spec-builder@^1.2.84":
   version "1.2.84"
   resolved "https://registry.npmmirror.com/@midwayjs/serverless-spec-builder/download/@midwayjs/serverless-spec-builder-1.2.84.tgz#c4ff54471acfbcb03c5a73a2b030d4fbc494b471"
@@ -1241,6 +1248,13 @@
   version "1.8.1"
   resolved "https://registry.nlark.com/@types/http-errors/download/@types/http-errors-1.8.1.tgz"
   integrity sha1-6BrSimC+4DKMbSOE4Cmuxibxrmc=
+
+"@types/ioredis@^4.27.8":
+  version "4.27.8"
+  resolved "https://registry.npmmirror.com/@types/ioredis/download/@types/ioredis-4.27.8.tgz#c2e113e4f0b6834062f155eaac27fa78d38e0790"
+  integrity sha1-wuET5PC2g0Bi8VXqrCf6eNOOB5A=
+  dependencies:
+    "@types/node" "*"
 
 "@types/istanbul-lib-coverage@*", "@types/istanbul-lib-coverage@^2.0.0", "@types/istanbul-lib-coverage@^2.0.1":
   version "2.0.3"
@@ -4833,6 +4847,23 @@ ioredis@^4.27.0:
   version "4.27.9"
   resolved "https://registry.nlark.com/ioredis/download/ioredis-4.27.9.tgz"
   integrity sha1-wnu63pck8Lj4TCefsdVnvnhboz0=
+  dependencies:
+    cluster-key-slot "^1.1.0"
+    debug "^4.3.1"
+    denque "^1.1.0"
+    lodash.defaults "^4.2.0"
+    lodash.flatten "^4.4.0"
+    lodash.isarguments "^3.1.0"
+    p-map "^2.1.0"
+    redis-commands "1.7.0"
+    redis-errors "^1.2.0"
+    redis-parser "^3.0.0"
+    standard-as-callback "^2.1.0"
+
+ioredis@^4.27.1:
+  version "4.28.0"
+  resolved "https://registry.npmmirror.com/ioredis/download/ioredis-4.28.0.tgz?cache=0&sync_timestamp=1634134263110&other_urls=https%3A%2F%2Fregistry.npmmirror.com%2Fioredis%2Fdownload%2Fioredis-4.28.0.tgz#5a2be3f37ff2075e2332f280eaeb02ab4d9ff0d3"
+  integrity sha1-Wivj83/yB14jMvKA6usCq02f8NM=
   dependencies:
     cluster-key-slot "^1.1.0"
     debug "^4.3.1"
