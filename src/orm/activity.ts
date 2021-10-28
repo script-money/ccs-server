@@ -223,7 +223,7 @@ export const getActivitiesToClose = async (intervalMinutes: number) => {
     where: {
       closed: false,
       createdAt: {
-        gt: moment().subtract(intervalMinutes, 'minutes').toDate(),
+        lt: moment().subtract(intervalMinutes, 'minutes').toDate(),
       },
     },
     select: {
