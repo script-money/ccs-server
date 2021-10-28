@@ -48,7 +48,8 @@
   },
   "scripts": {
     "start": "egg-scripts start --daemon --title=midway-server-my_midway_project --framework=@midwayjs/web",
-    "stop": "egg-scripts stop --title=midway-server-my_midway_project",
+    "online": "egg-scripts start --env=testnet --title=midway-ccs-server --framework=@midwayjs/web",
+    "stop": "egg-scripts stop --title=midway-ccs-server",
     "start_build": "npm run build && cross-env NODE_ENV=development midway-bin dev",
     "copy_config": "cp ../dappstarter/packages/dapplib/src/dapp-config.json src/config",
     "dev": "yarn copy_config && NODE_ENV=local midway-bin dev --ts",
@@ -64,6 +65,7 @@
     "lint:fix": "mwts fix",
     "ci": "npm run cov",
     "build": "MIDWAY_SERVER_ENV=testnet midway-bin build -c",
+    "copy-prisma": "cp -rf src/prisma/client dist/prisma/ && cp src/prisma/.env dist/prisma/.env",
     "prisma": "npm run prisma:generate & npm run prisma:push",
     "prisma:generate": "prisma generate --schema ./src/prisma/schema.prisma",
     "prisma:push": "prisma db push --schema ./src/prisma/schema.prisma",

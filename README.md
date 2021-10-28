@@ -14,7 +14,7 @@ The server side is responsible for
 2. launch postgres `docker run --name postgres -e POSTGRES_PASSWORD=password -e POSTGRES_DB=ccs -p 5432:5432 -d postgres`
 3. run `cd src/prisma && cp .env.example .env` then modify .env to connect postgres
 4. `npx prisma migrate dev --name initial` to generate prisma client files
-5. launch a redis at `redis://127.0.0.1:6379`
+5. launch a redis `docker run --name redis -p 6379:6379 -d redis` at `redis://127.0.0.1:6379`
 
 ## how to run local development environment
 

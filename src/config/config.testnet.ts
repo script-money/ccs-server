@@ -1,6 +1,4 @@
 import * as fcl from '@onflow/fcl';
-import dotenv from 'dotenv';
-dotenv.config();
 
 export const taskConfig = {
   redis: 'redis://127.0.0.1:6379',
