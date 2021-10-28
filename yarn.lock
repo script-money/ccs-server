@@ -604,6 +604,11 @@
   resolved "https://registry.npmmirror.com/@midwayjs/bootstrap/download/@midwayjs/bootstrap-2.13.3.tgz"
   integrity sha1-22UeQno6Z8UQsUvYBAFeegbNdh4=
 
+"@midwayjs/bootstrap@^2.13.4":
+  version "2.13.4"
+  resolved "https://registry.npmmirror.com/@midwayjs/bootstrap/download/@midwayjs/bootstrap-2.13.4.tgz#60e42194f6e970bd863efe49754b8335b8802d0d"
+  integrity sha1-YOQhlPbpcL2GPv5JdUuDNbiALQ0=
+
 "@midwayjs/cli-plugin-add@^1.2.84":
   version "1.2.84"
   resolved "https://registry.npmmirror.com/@midwayjs/cli-plugin-add/download/@midwayjs/cli-plugin-add-1.2.84.tgz#5397d7fb6d997ad3d086a1b761c344db1e91aa3e"

@@ -16,3 +16,4 @@ src/prisma/client
 src/prisma/.env
 src/config/dapp-config.json
 .env
+dist/

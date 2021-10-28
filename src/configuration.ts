@@ -1,15 +1,11 @@
 import { App, Configuration } from '@midwayjs/decorator';
 import { ILifeCycle, IMidwayApplication } from '@midwayjs/core';
 import chalk from 'chalk';
-import dotenv from 'dotenv';
 import * as task from '@midwayjs/task';
 // eslint-disable-next-line node/no-unpublished-import
 import { PrismaClient } from './prisma/client';
 import { join } from 'path';
 import * as redis from '@midwayjs/redis';
-
-// Prisma require env variables
-dotenv.config();
 
 const client = new PrismaClient();
 

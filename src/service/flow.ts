@@ -177,9 +177,9 @@ export class FlowService {
 
     if (savedCursor.currentHeight + 1 >= endBlock) return;
 
-    // console.log(
-    //   `query ${key} from ${savedCursor.currentHeight + 1} to ${endBlock}`
-    // );
+    console.log(
+      `query ${key} from ${savedCursor.currentHeight + 1} to ${endBlock}`
+    );
 
     const events: Event[] = await fcl
       .send([
