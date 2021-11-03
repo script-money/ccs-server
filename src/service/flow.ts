@@ -180,20 +180,24 @@ export class FlowService {
     console.log(
       `query ${key} from ${savedCursor.currentHeight + 1} to ${endBlock}`
     );
-
-    const events: Event[] = await fcl
-      .send([
-        fcl.getEventsAtBlockHeightRange(
-          key,
-          savedCursor.currentHeight + 1,
-          endBlock
-        ),
-      ])
-      .then(fcl.decode);
-    await this.blockCursorService.updateBlockCursorById(
-      savedCursor.id,
-      endBlock
-    );
-    return events;
+    try {
+      const events: Event[] = await fcl
+        .send([
+          fcl.getEventsAtBlockHeightRange(
+            key,
+            savedCursor.currentHeight + 1,
+            endBlock
+          ),
+        ])
+        .then(fcl.decode);
+      return events;
+    } catch (error) {
+      throw new Error(error);
+    } finally {
+      await this.blockCursorService.updateBlockCursorById(
+        savedCursor.id,
+        endBlock
+      );
+    }
   }
 }

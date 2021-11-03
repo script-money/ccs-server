@@ -1,5 +1,11 @@
 import { App, Configuration } from '@midwayjs/decorator';
-import { ILifeCycle, IMidwayApplication } from '@midwayjs/core';
+import {
+  Context,
+  ILifeCycle,
+  IMidwayApplication,
+  IMidwayContainer,
+  IMidwayBaseApplication,
+} from '@midwayjs/core';
 import chalk from 'chalk';
 import * as task from '@midwayjs/task';
 // eslint-disable-next-line node/no-unpublished-import
@@ -21,11 +27,15 @@ export class ContainerConfiguration implements ILifeCycle {
   @App()
   app: IMidwayApplication;
 
-  async onReady(): Promise<void> {
+  async onReady(
+    container: IMidwayContainer,
+    app?: IMidwayBaseApplication<Context>
+  ): Promise<void> {
     client.$connect();
     console.log(chalk.greenBright('[ Prisma ] Prisma Client Connected'));
     this.app.getApplicationContext().registerObject('prisma', client);
     console.log(chalk.greenBright('[ Prisma ] Prisma Client Injected'));
+    console.log(chalk.greenBright(`Enviroment is ${app.getEnv()}`));
   }
 
   async onStop(): Promise<void> {

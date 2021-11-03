@@ -58,19 +58,23 @@ export class TaskUtils {
     // if block behind a lot, should send N blocks per request to catch up
     for (const i of [...Array(epoch).keys()]) {
       const queryEndAt = initStartBlock + (i + 1) * queryBlockRange;
-
-      const result = await this.flowService.getEvents({
-        contractAddr: fcl.sansPrefix(contractAddr),
-        contractName,
-        eventName,
-        endBlock: Math.min(queryEndAt, lastBlock),
-      });
-
-      if (result !== undefined && result.length !== 0) {
-        result.forEach(async (event: Event) => {
-          console.log(`save ${ormFunction.name} event to db`, event.data);
-          await ormFunction(event.data);
+      try {
+        const result = await this.flowService.getEvents({
+          contractAddr: fcl.sansPrefix(contractAddr),
+          contractName,
+          eventName,
+          endBlock: Math.min(queryEndAt, lastBlock),
         });
+
+        if (result !== undefined && result.length !== 0) {
+          result.forEach(async (event: Event) => {
+            console.log(`save ${ormFunction.name} event to db`, event.data);
+            await ormFunction(event.data);
+          });
+        }
+      } catch (error) {
+        console.warn(error);
+        continue;
       }
     }
     return lastBlock;
