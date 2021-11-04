@@ -1,5 +1,7 @@
 # ccs-server
 
+migrate to [ccs-nest](https://github.com/script-money/ccs-nest)
+
 The server side is responsible for
 
 1. synchronizing event data on the chain
